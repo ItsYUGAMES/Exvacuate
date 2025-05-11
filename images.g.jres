@@ -49,6 +49,11 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "Sprite_Slime"
     },
+    "image9": {
+        "data": "hwQQABAAAADk7u7u7u7uTs5OREREROTs7uxEREREzu5Ozk5EROTs5E7k7EREzk7kTkTOTuTsROROROTszk5E5E5ERM7sRETkTkREzuxEROROROTszk5E5E5Ezk7k7ETkTuTsRETOTuROzk5EROTs5O7sRERERM7uzk5ERERE5Ozk7u7u7u7uTg==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "myImage"
+    },
     "anim2": {
         "namespace": "myAnimations",
         "id": "anim2",

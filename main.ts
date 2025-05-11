@@ -1,6 +1,9 @@
 namespace SpriteKind {
     export const ActivePlayer = SpriteKind.create()
     export const Melee = SpriteKind.create()
+    export const InteractiveItem = SpriteKind.create()
+    export const Boxes = SpriteKind.create()
+    export const Follower = SpriteKind.create()
 }
 function UpdateAnim () {
     if (activePlayer.vx == 0 && activePlayer.vy == 0) {
@@ -29,7 +32,7 @@ function UpdateAnim () {
         }
     }
     if (!(isFollowing)) {
-        if (Follower == playerMiner) {
+        if (Follower2 == playerMiner) {
             animation.stopAnimation(animation.AnimationTypes.All, playerMiner)
             if (isRight) {
                 playerMiner.setImage(assets.image`Sprite_Miner_Right`)
@@ -54,6 +57,9 @@ function UpdateAnim () {
         }
     }
 }
+sprites.onOverlap(SpriteKind.Melee, SpriteKind.Enemy, function (sprite, otherSprite) {
+    bar.value += -1
+})
 function PlayerAttack () {
     Attack = sprites.create(img`
         . . . . . . 3 3 . . . . . . . . 
@@ -90,6 +96,7 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     isDown = false
     isLeft = false
     isRight = false
+    tryMoveBox(0, -1)
     animation.runImageAnimation(
     playerMiner,
     assets.animation`Anim_Miner_Forward`,
@@ -114,6 +121,7 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
     isLeft = false
     isRight = false
     isUp = false
+    tryMoveBox(0, 1)
     animation.runImageAnimation(
     playerMiner,
     assets.animation`Anim_Miner_Backward`,
@@ -138,6 +146,7 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     isDown = false
     isLeft = false
     isUp = false
+    tryMoveBox(1, 0)
     animation.runImageAnimation(
     playerMiner,
     assets.animation`Anim_Miner_Right`,
@@ -159,12 +168,12 @@ function shootHomingBullet (shooter: Sprite, target: Sprite, speed: number) {
         . 5 5 5 . 
         . . 5 . . 
         `, shooter, 0, 0)
-    dx = target.x - shooter.x
-    dy = target.y - shooter.y
-    len = Math.sqrt(dx * dx + dy * dy)
+    dx2 = target.x - shooter.x
+    dy2 = target.y - shooter.y
+    len = Math.sqrt(dx2 * dx2 + dy2 * dy2)
     // 单位向量方向 * speed
-    bullet.vx = dx / len * speed
-    bullet.vy = dy / len * speed
+    bullet.vx = dx2 / len * speed
+    bullet.vy = dy2 / len * speed
 }
 function Destory () {
     if (isLeft) {
@@ -187,19 +196,48 @@ function Destory () {
         tiles.setWallAt(tiles.getTileLocation(frontX, frontY), false)
     }
 }
+statusbars.onZero(StatusBarKind.EnemyHealth, function (status) {
+    sprites.destroy(bar.spriteAttachedTo(), effects.halo, 500)
+    enemyBarsList.removeAt(0)
+})
+function tryMoveBox (dx: number, dy: number) {
+    if (activePlayer != playerMiner) {
+        return
+    }
+    playerLoc = activePlayer.tilemapLocation()
+    front = tiles.getTileLocation(playerLoc.column + dx, playerLoc.row + dy)
+    beyond = tiles.getTileLocation(playerLoc.column + dx * 2, playerLoc.row + dy * 2)
+    if (tiles.tileAtLocationEquals(front, assets.tile`BoxTile`)) {
+        // 前方是箱子，检查箱子前面是否可移动
+        canPush = tiles.tileAtLocationEquals(beyond, assets.tile`transparency16`)
+        if (canPush) {
+            // 推箱子
+            tiles.setTileAt(beyond, assets.tile`BoxTile`)
+            tiles.setWallAt(beyond, true)
+            tiles.setTileAt(front, assets.tile`transparency16`)
+            tiles.setWallAt(front, false)
+            // 移动玩家
+            tiles.placeOnTile(activePlayer, front)
+        }
+    }
+}
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     scene.cameraFollowSprite(null)
     controller.moveSprite(activePlayer, 0, 0)
     if (activePlayer == playerMiner) {
-        Follower.follow(null)
+        Follower2.follow(null)
         activePlayer = playerCat
-        Follower = playerMiner
-        Follower.follow(activePlayer, 60)
+        Follower2 = playerMiner
+        playerCat.setKind(SpriteKind.Player)
+        playerMiner.setKind(SpriteKind.Player)
+        Follower2.follow(activePlayer, 60)
     } else {
-        Follower.follow(null)
+        Follower2.follow(null)
         activePlayer = playerMiner
-        Follower = playerCat
-        Follower.follow(activePlayer, 60)
+        Follower2 = playerCat
+        playerMiner.setKind(SpriteKind.Player)
+        playerCat.setKind(SpriteKind.Player)
+        Follower2.follow(activePlayer, 60)
     }
     controller.moveSprite(activePlayer, 80, 80)
     scene.cameraFollowSprite(activePlayer)
@@ -230,25 +268,43 @@ function shootCircleBullets (center: Sprite, count: number, speed: number) {
         bullet2.vy = speed * Math.sin(angle * Math.PI / 180)
     }
 }
+scene.onOverlapTile(SpriteKind.Player, sprites.castle.tilePath1, function (sprite, location) {
+	
+})
 function UpdateFollowing () {
-    dx = activePlayer.x - Follower.x
-    dy = activePlayer.y - Follower.y
-    distance = Math.sqrt(dx * dx + dy * dy)
+    dx2 = activePlayer.x - Follower2.x
+    dy2 = activePlayer.y - Follower2.y
+    distance = Math.sqrt(dx2 * dx2 + dy2 * dy2)
     // 不重叠的最小距离
     minDistance = 20
     if (distance > minDistance) {
-        Follower.follow(activePlayer, 60)
+        Follower2.follow(activePlayer, 60)
         isFollowing = true
     } else {
-        Follower.follow(null)
+        Follower2.follow(null)
         isFollowing = false
     }
 }
+function spawnEnemy (spawnLoc: tiles.Location, hp: number) {
+    let enemyList: Sprite[] = []
+    enemy = sprites.create(assets.image`Sprite_Slime`, SpriteKind.Enemy)
+    tiles.placeOnTile(enemy, spawnLoc)
+    bar = statusbars.create(15, 3, StatusBarKind.EnemyHealth)
+    bar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+    bar.attachToSprite(enemy)
+    bar.value = hp
+    enemyList.push(enemy)
+    enemyBarsList.push(bar)
+}
+scene.onOverlapTile(SpriteKind.Player, assets.tile`transparency16`, function (sprite, location) {
+	
+})
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     isLeft = true
     isDown = false
     isRight = false
     isUp = false
+    tryMoveBox(-1, 0)
     animation.runImageAnimation(
     playerMiner,
     assets.animation`Anim_Miner_Left`,
@@ -262,40 +318,51 @@ controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     true
     )
 })
+let enemy: Sprite = null
 let minDistance = 0
 let distance = 0
 let bullet2: Sprite = null
 let angle = 0
+let canPush = false
+let beyond: tiles.Location = null
+let front: tiles.Location = null
+let playerLoc: tiles.Location = null
 let targetTile: tiles.Location = null
 let frontY = 0
 let frontX = 0
 let len = 0
-let dy = 0
-let dx = 0
+let dy2 = 0
+let dx2 = 0
 let bullet: Sprite = null
 let isChasing = false
 let Attack: Sprite = null
+let bar: StatusBarSprite = null
 let isFollowing = false
 let isDown = false
 let isUp = false
 let isLeft = false
 let isRight = false
-let Follower: Sprite = null
+let Follower2: Sprite = null
 let activePlayer: Sprite = null
 let playerCat: Sprite = null
 let playerMiner: Sprite = null
 let hasTriggeredChase = false
+let enemyBarsList: StatusBarSprite[] = []
+let Enemys = null
+let isBlocked = false
+let dx = 0
+let dy = 0
+enemyBarsList = statusbars.allOfKind(StatusBarKind.EnemyHealth)
 hasTriggeredChase = false
-playerMiner = sprites.create(assets.image`TEST`, SpriteKind.Player)
-playerCat = sprites.create(assets.image`Sprite_Cat_Backward`, SpriteKind.Player)
+playerMiner = sprites.create(assets.image`TEST`, SpriteKind.ActivePlayer)
+playerCat = sprites.create(assets.image`Sprite_Cat_Backward`, SpriteKind.Follower)
 activePlayer = playerMiner
 controller.moveSprite(activePlayer, 80, 80)
 scene.cameraFollowSprite(activePlayer)
 playerCat.setScale(0.9, ScaleAnchor.Middle)
-Follower = playerCat
-Follower.follow(activePlayer, 50)
+Follower2 = playerCat
+Follower2.follow(activePlayer, 50)
 tiles.placeOnTile(activePlayer, tiles.getTileLocation(2, 2))
-let Enemy_Slime = sprites.create(assets.image`Sprite_Slime`, SpriteKind.Player)
 tiles.setCurrentTilemap(tilemap`级别`)
 game.onUpdate(function () {
     UpdateFollowing()

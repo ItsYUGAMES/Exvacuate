@@ -193,6 +193,25 @@ f e d e d 5 5 5 5 5 5 f . . . .
 . . f 7 7 7 7 7 7 7 7 7 7 7 5 f 
 . . f 7 f 7 f 7 7 f 7 7 7 7 7 f 
 `;
+            case "image9":
+            case "myImage":return img`
+4 e e e e e e e e e e e e e e 4 
+e c e 4 4 4 4 4 4 4 4 4 4 e c e 
+e e c e 4 4 4 4 4 4 4 4 e c e e 
+e 4 e c e 4 4 4 4 4 4 e c e 4 e 
+e 4 4 e c e 4 4 4 4 e c e 4 4 e 
+e 4 4 4 e c e 4 4 e c e 4 4 4 e 
+e 4 4 4 4 e c e e c e 4 4 4 4 e 
+e 4 4 4 4 4 e c c e 4 4 4 4 4 e 
+e 4 4 4 4 4 e c c e 4 4 4 4 4 e 
+e 4 4 4 4 e c e e c e 4 4 4 4 e 
+e 4 4 4 e c e 4 4 e c e 4 4 4 e 
+e 4 4 e c e 4 4 4 4 e c e 4 4 e 
+e 4 e c e 4 4 4 4 4 4 e c e 4 e 
+e e c e 4 4 4 4 4 4 4 4 e c e e 
+e c e 4 4 4 4 4 4 4 4 4 4 e c e 
+4 e e e e e e e e e e e e e e 4 
+`;
         }
         return null;
     })

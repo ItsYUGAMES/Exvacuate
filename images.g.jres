@@ -4,11 +4,6 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "TEST"
     },
-    "image8": {
-        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAA/w8AAAAA//939f8AAPB3d3dXdwAA8Meqd3f3AAB/d6x3qncA8Hf3fHen9/B/d3d3x3p38Hd3d3fHenfwd3d3even939Xd3esd893f1d1dXx3d3fw/393VXd3dwAA8P9/d1d3AAAAAPD/d3UAAAAAAAD//w==",
-        "mimeType": "image/x-mkcd-f4",
-        "displayName": "Sprite_Slime"
-    },
     "image2": {
         "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAPD/AAAAAAAAz0T/AAAAAPDETO4PAAAAT8RM7v7///9PxEze7ru7y0/ETNWt3RGrT8RMHa3dFctPxEyf3bS7q0/ETNX9////8MRM/g8AAADwIiIPAAAAAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
         "mimeType": "image/x-mkcd-f4",
@@ -48,6 +43,11 @@
         "data": "hwQQABAAAAAAAADw8PDwDwAA8F/fX+/+APDvVd1V3/0A31VVVfXv/gBfVVVVVd/9APBVVVVVX+UA8FVVVVVe5QDwVVVVVe5VAPBVVVVV7lUA8FVVVVVe5QDwVVVVVV/lAF9VVVVV//8A31VVVfUPAADw71XdVQ8AAADwX99fAAAAAADw8PAAAA==",
         "mimeType": "image/x-mkcd-f4",
         "displayName": "Sprite_Cat_Forward"
+    },
+    "image8": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAA/w8AAAAA//939f8AAPB3d3dXdwAA8Meqd3f3AAB/d6x3qncA8Hf3fHen9/B/d3d3x3p38Hd3d3fHenfwd3d3even939Xd3esd893f1d1dXx3d3fw/393VXd3dwAA8P9/d1d3AAAAAPD/d3UAAAAAAAD//w==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "Sprite_Slime"
     },
     "anim2": {
         "namespace": "myAnimations",

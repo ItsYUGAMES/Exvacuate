@@ -22,25 +22,6 @@ namespace myImages {
 . . . f f b b f f b b f f . . . 
 . . . . f a c f f a c f . . . . 
 `;
-            case "image8":
-            case "Sprite_Slime":return img`
-. . . . . . . . . . f f . . . . 
-. . . . . . . f f f 7 7 f . . . 
-. . . . . . . f 7 7 7 7 f . . . 
-. . . . . . f 7 7 7 5 5 f . . . 
-. . . . . f 7 7 7 7 7 5 f . . . 
-. . . f f 7 7 7 7 7 7 7 7 f . . 
-. . f 7 7 7 7 7 7 7 7 5 7 f . . 
-. . f 7 c 7 f 7 7 7 7 7 7 f . . 
-. . f 7 a c c 7 7 a c c 5 f . . 
-. . f 7 a a 7 7 7 7 a 7 5 7 f . 
-. f 7 7 7 7 7 7 7 7 7 7 7 7 f . 
-. f 7 7 7 7 7 c c f 7 7 7 7 f . 
-. f 5 7 7 a 7 a a 7 f 7 7 7 7 f 
-. . f 5 7 a a 7 7 a c 7 7 5 7 f 
-. . f 7 7 7 7 7 7 7 7 7 7 7 5 f 
-. . f 7 f 7 f 7 7 f 7 7 7 7 7 f 
-`;
             case "image2":
             case "Sprite_Miner_Right":return img`
 . . . . . f f f f f f . . . . . 
@@ -192,6 +173,25 @@ f 5 5 f 5 5 5 5 5 5 5 5 f 5 5 f
 f e d e d 5 5 e e 5 5 f . . . . 
 f e d e d 5 5 5 5 5 5 f . . . . 
 . f f f f e e 5 5 e e f . . . . 
+`;
+            case "image8":
+            case "Sprite_Slime":return img`
+. . . . . . . . . . f f . . . . 
+. . . . . . . f f f 7 7 f . . . 
+. . . . . . . f 7 7 7 7 f . . . 
+. . . . . . f 7 7 7 5 5 f . . . 
+. . . . . f 7 7 7 7 7 5 f . . . 
+. . . f f 7 7 7 7 7 7 7 7 f . . 
+. . f 7 7 7 7 7 7 7 7 5 7 f . . 
+. . f 7 c 7 f 7 7 7 7 7 7 f . . 
+. . f 7 a c c 7 7 a c c 5 f . . 
+. . f 7 a a 7 7 7 7 a 7 5 7 f . 
+. f 7 7 7 7 7 7 7 7 7 7 7 7 f . 
+. f 7 7 7 7 7 c c f 7 7 7 7 f . 
+. f 5 7 7 a 7 a a 7 f 7 7 7 7 f 
+. . f 5 7 a a 7 7 a c 7 7 5 7 f 
+. . f 7 7 7 7 7 7 7 7 7 7 7 5 f 
+. . f 7 f 7 f 7 7 f 7 7 7 7 7 f 
 `;
         }
         return null;

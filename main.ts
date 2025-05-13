@@ -63,6 +63,7 @@ scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.floorLight0, function (sp
     tiles.setCurrentTilemap(tilemap`Level1_Room2`)
 })
 sprites.onOverlap(SpriteKind.Melee, SpriteKind.Enemy, function (sprite, otherSprite) {
+    scene.cameraShake(2, 500)
     damagedEnemy = otherSprite
     statusbars.getStatusBarAttachedTo(StatusBarKind.EnemyHealth, damagedEnemy).value += -1
 })
@@ -135,20 +136,24 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
     true
     )
 })
-function EnemyChasing (EnemyArr: any[], DistanceLimit: number) {
-    for (let index = 0; index <= EnemyArr.length; index++) {
-        dx3 = activePlayer.x - EnemyArr[index].x
-        dy3 = activePlayer.y - EnemyArr[index].y
+function EnemyChasing (DistanceLimit: number) {
+    for (let 值 of enemyList) {
+        dx3 = activePlayer.x - 值.x
+        dy3 = activePlayer.y - 值.y
         ChasingDistance = Math.sqrt(dx3 * dx3 + dy3 * dy3)
         if (ChasingDistance < DistanceLimit) {
-            EnemyArr[index].follow(activePlayer)
+            值.follow(activePlayer, 40)
+        } else {
+            值.follow(null)
         }
     }
 }
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (activePlayer == playerMiner) {
-        PlayerAttack()
-        Destory()
+    if (IsWeaponGet) {
+        if (activePlayer == playerMiner) {
+            PlayerAttack()
+            Destory()
+        }
     }
 })
 controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -208,11 +213,12 @@ function Destory () {
 }
 sprites.onOverlap(SpriteKind.ActivePlayer, SpriteKind.Projectile, function (sprite, otherSprite) {
     if (activePlayer == playerMiner) {
+        scene.cameraShake(4, 500)
         info.changeLifeBy(-1)
+        pause(500)
     }
 })
 statusbars.onZero(StatusBarKind.EnemyHealth, function (status) {
-    let enemyList: Sprite[] = []
     sprites.destroy(damagedEnemy, effects.halo, 500)
     enemyList.removeAt(enemyList.indexOf(damagedEnemy))
 })
@@ -222,8 +228,9 @@ function EnemySpawner (EnemyArr: Sprite[], SpriteImage: Image, HP: number, Vx: n
     bar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
     bar.attachToSprite(enemy)
     bar.value = HP
-    damagedEnemy.setVelocity(45, 35)
+    enemy.setVelocity(Vx, Vy)
     EnemyArr.push(enemy)
+    tiles.placeOnRandomTile(enemy, assets.tile`FloorTile`)
 }
 scene.onOverlapTile(SpriteKind.ActivePlayer, assets.tile`myTile`, function (sprite, location) {
     if (!(hasTriggeredChase)) {
@@ -246,7 +253,7 @@ function tryMoveBox (dx: number, dy: number) {
             // 推箱子
             tiles.setTileAt(beyond, assets.tile`BoxTile`)
             tiles.setWallAt(beyond, true)
-            tiles.setTileAt(front, assets.tile`transparency16`)
+            tiles.setTileAt(front, assets.tile`tile5`)
             tiles.setWallAt(front, false)
             // 移动玩家
             tiles.placeOnTile(activePlayer, front)
@@ -257,6 +264,10 @@ scene.onOverlapTile(SpriteKind.ActivePlayer, assets.tile`tile11`, function (spri
     sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
     tiles.setCurrentTilemap(tilemap`Level1_Room2`)
     tiles.placeOnTile(activePlayer, tiles.getTileLocation(2, 28))
+    tiles.placeOnTile(Follower2, tiles.getTileLocation(2, 29))
+})
+scene.onOverlapTile(SpriteKind.ActivePlayer, assets.tile`transparency16`, function (sprite, location) {
+    IsWeaponGet = true
 })
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     scene.cameraFollowSprite(null)
@@ -279,16 +290,19 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     controller.moveSprite(activePlayer, 80, 80)
     scene.cameraFollowSprite(activePlayer)
 })
-function EnemyPatrol (column: number, row: number, Enemy: Sprite) {
-    if (Enemy.tilemapLocation().column > column) {
-        Enemy.vx = 0 - Enemy.vx
-    } else if (Enemy.tilemapLocation().row > row) {
-        Enemy.vy = 0 - Enemy.vy
-    }
-    if (Enemy.tilemapLocation().column < column - 3) {
-        Enemy.vx = 0 - Enemy.vx
-    } else if (Enemy.tilemapLocation().row < row - 3) {
-        Enemy.vy = 0 - Enemy.vy
+function EnemyPatrol (column: number, row: number, offsetX: number, offsetY: number) {
+    for (let indexPatrol = 0; indexPatrol <= enemyList.length - 1; indexPatrol++) {
+        TargetEnemy = enemyList[indexPatrol]
+        if (TargetEnemy.tilemapLocation().column > column) {
+            TargetEnemy.vx = 0 - TargetEnemy.vx
+        } else if (TargetEnemy.tilemapLocation().row > row) {
+            TargetEnemy.vy = 0 - TargetEnemy.vy
+        }
+        if (TargetEnemy.tilemapLocation().column < column - 3) {
+            TargetEnemy.vx = 0 - TargetEnemy.vx
+        } else if (TargetEnemy.tilemapLocation().row < row - 3) {
+            TargetEnemy.vy = 0 - TargetEnemy.vy
+        }
     }
 }
 function shootCircleBullets (center: Sprite, count: number, speed: number) {
@@ -306,7 +320,9 @@ function shootCircleBullets (center: Sprite, count: number, speed: number) {
     }
 }
 sprites.onOverlap(SpriteKind.ActivePlayer, SpriteKind.Enemy, function (sprite, otherSprite) {
+    scene.cameraShake(4, 500)
     info.changeLifeBy(-1)
+    pause(500)
 })
 function UpdateFollowing () {
     dx2 = activePlayer.x - Follower2.x
@@ -324,9 +340,13 @@ function UpdateFollowing () {
 }
 scene.onOverlapTile(SpriteKind.ActivePlayer, assets.tile`ChannelTile`, function (sprite, location) {
     sprites.destroy(rock)
-    sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
     tiles.setCurrentTilemap(tilemap`Level1`)
     tiles.placeOnTile(activePlayer, tiles.getTileLocation(6, 2))
+    tiles.placeOnTile(Follower2, tiles.getTileLocation(6, 2))
+    for (let index = 0; index < 4; index++) {
+        myImage = assets.image`Sprite_Slime`
+        EnemySpawner(enemyList, myImage, 5, 30, 35)
+    }
 })
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     isLeft = true
@@ -347,10 +367,12 @@ controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     true
     )
 })
+let myImage: Image = null
 let minDistance = 0
 let distance = 0
 let bullet2: Sprite = null
 let angle = 0
+let TargetEnemy: Sprite = null
 let canPush = false
 let beyond: tiles.Location = null
 let front: tiles.Location = null
@@ -364,9 +386,11 @@ let frontX = 0
 let dy2 = 0
 let dx2 = 0
 let bullet: Sprite = null
+let IsWeaponGet = false
 let ChasingDistance = 0
 let dy3 = 0
 let dx3 = 0
+let enemyList: Sprite[] = []
 let Attack: Sprite = null
 let damagedEnemy: Sprite = null
 let isFollowing = false
@@ -412,6 +436,10 @@ game.onUpdate(function () {
     if (activePlayer.overlapsWith(rock)) {
         game.gameOver(false)
         game.reset()
+    }
+    if (enemyList.length != 0) {
+        EnemyPatrol(11, 20, 5, 3)
+        EnemyChasing(48)
     }
 })
 game.onUpdateInterval(5000, function () {

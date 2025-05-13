@@ -57,13 +57,14 @@ function UpdateAnim () {
         }
     }
 }
-// 更换地图，随后布置敌人
+// TEST
 scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.floorLight0, function (sprite, location) {
     sprites.destroyAllSpritesOfKind(SpriteKind.ActivePlayer)
     tiles.setCurrentTilemap(tilemap`Level1_Room2`)
 })
 sprites.onOverlap(SpriteKind.Melee, SpriteKind.Enemy, function (sprite, otherSprite) {
-    bar.value += -1
+    damagedEnemy = otherSprite
+    statusbars.getStatusBarAttachedTo(StatusBarKind.EnemyHealth, damagedEnemy).value += -1
 })
 function PlayerAttack () {
     Attack = sprites.create(img`
@@ -134,6 +135,16 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
     true
     )
 })
+function EnemyChasing (EnemyArr: any[], DistanceLimit: number) {
+    for (let index = 0; index <= EnemyArr.length; index++) {
+        dx3 = activePlayer.x - EnemyArr[index].x
+        dy3 = activePlayer.y - EnemyArr[index].y
+        ChasingDistance = Math.sqrt(dx3 * dx3 + dy3 * dy3)
+        if (ChasingDistance < DistanceLimit) {
+            EnemyArr[index].follow(activePlayer)
+        }
+    }
+}
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (activePlayer == playerMiner) {
         PlayerAttack()
@@ -169,10 +180,10 @@ function shootHomingBullet (shooter: Sprite, target: Sprite, speed: number) {
         `, shooter, 0, 0)
     dx2 = target.x - shooter.x
     dy2 = target.y - shooter.y
-    len = Math.sqrt(dx2 * dx2 + dy2 * dy2)
+    ChasingDistance = Math.sqrt(dx2 * dx2 + dy2 * dy2)
     // 单位向量方向 * speed
-    bullet.vx = dx2 / len * speed
-    bullet.vy = dy2 / len * speed
+    bullet.vx = dx2 / ChasingDistance * speed
+    bullet.vy = dy2 / ChasingDistance * speed
 }
 function Destory () {
     if (isLeft) {
@@ -201,9 +212,19 @@ sprites.onOverlap(SpriteKind.ActivePlayer, SpriteKind.Projectile, function (spri
     }
 })
 statusbars.onZero(StatusBarKind.EnemyHealth, function (status) {
-    sprites.destroy(bar.spriteAttachedTo(), effects.halo, 500)
-    enemyBarsList.removeAt(0)
+    let enemyList: Sprite[] = []
+    sprites.destroy(damagedEnemy, effects.halo, 500)
+    enemyList.removeAt(enemyList.indexOf(damagedEnemy))
 })
+function EnemySpawner (EnemyArr: Sprite[], SpriteImage: Image, HP: number, Vx: number, Vy: number) {
+    enemy = sprites.create(SpriteImage, SpriteKind.Enemy)
+    bar = statusbars.create(15, 3, StatusBarKind.EnemyHealth)
+    bar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+    bar.attachToSprite(enemy)
+    bar.value = HP
+    damagedEnemy.setVelocity(45, 35)
+    EnemyArr.push(enemy)
+}
 scene.onOverlapTile(SpriteKind.ActivePlayer, assets.tile`myTile`, function (sprite, location) {
     if (!(hasTriggeredChase)) {
         hasTriggeredChase = true
@@ -220,7 +241,7 @@ function tryMoveBox (dx: number, dy: number) {
     beyond = tiles.getTileLocation(playerLoc.column + dx * 2, playerLoc.row + dy * 2)
     if (tiles.tileAtLocationEquals(front, assets.tile`BoxTile`)) {
         // 前方是箱子，检查箱子前面是否可移动
-        canPush = 0
+        canPush = !(tiles.tileAtLocationEquals(beyond, assets.tile`WallTile`))
         if (canPush) {
             // 推箱子
             tiles.setTileAt(beyond, assets.tile`BoxTile`)
@@ -233,9 +254,9 @@ function tryMoveBox (dx: number, dy: number) {
     }
 }
 scene.onOverlapTile(SpriteKind.ActivePlayer, assets.tile`tile11`, function (sprite, location) {
-    sprites.destroy(rock)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
     tiles.setCurrentTilemap(tilemap`Level1_Room2`)
-    tiles.placeOnTile(activePlayer, tiles.getTileLocation(6, 2))
+    tiles.placeOnTile(activePlayer, tiles.getTileLocation(2, 28))
 })
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     scene.cameraFollowSprite(null)
@@ -244,15 +265,15 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
         Follower2.follow(null)
         activePlayer = playerCat
         Follower2 = playerMiner
-        playerCat.setKind(SpriteKind.Player)
-        playerMiner.setKind(SpriteKind.Player)
+        playerCat.setKind(SpriteKind.ActivePlayer)
+        playerMiner.setKind(SpriteKind.Follower)
         Follower2.follow(activePlayer, 60)
     } else {
         Follower2.follow(null)
         activePlayer = playerMiner
         Follower2 = playerCat
-        playerMiner.setKind(SpriteKind.Player)
-        playerCat.setKind(SpriteKind.Player)
+        playerMiner.setKind(SpriteKind.ActivePlayer)
+        playerCat.setKind(SpriteKind.Follower)
         Follower2.follow(activePlayer, 60)
     }
     controller.moveSprite(activePlayer, 80, 80)
@@ -285,7 +306,7 @@ function shootCircleBullets (center: Sprite, count: number, speed: number) {
     }
 }
 sprites.onOverlap(SpriteKind.ActivePlayer, SpriteKind.Enemy, function (sprite, otherSprite) {
-	
+    info.changeLifeBy(-1)
 })
 function UpdateFollowing () {
     dx2 = activePlayer.x - Follower2.x
@@ -303,20 +324,10 @@ function UpdateFollowing () {
 }
 scene.onOverlapTile(SpriteKind.ActivePlayer, assets.tile`ChannelTile`, function (sprite, location) {
     sprites.destroy(rock)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
     tiles.setCurrentTilemap(tilemap`Level1`)
     tiles.placeOnTile(activePlayer, tiles.getTileLocation(6, 2))
 })
-function spawnEnemy (spawnLoc: tiles.Location, hp: number) {
-    let enemyList: Sprite[] = []
-    enemy = sprites.create(assets.image`Sprite_Slime`, SpriteKind.Enemy)
-    tiles.placeOnTile(enemy, spawnLoc)
-    bar = statusbars.create(15, 3, StatusBarKind.EnemyHealth)
-    bar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
-    bar.attachToSprite(enemy)
-    bar.value = hp
-    enemyList.push(enemy)
-    enemyBarsList.push(bar)
-}
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     isLeft = true
     isDown = false
@@ -336,25 +347,28 @@ controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     true
     )
 })
-let enemy: Sprite = null
 let minDistance = 0
 let distance = 0
 let bullet2: Sprite = null
 let angle = 0
-let canPush = 0
+let canPush = false
 let beyond: tiles.Location = null
 let front: tiles.Location = null
 let playerLoc: tiles.Location = null
 let isChasing = false
+let bar: StatusBarSprite = null
+let enemy: Sprite = null
 let targetTile: tiles.Location = null
 let frontY = 0
 let frontX = 0
-let len = 0
 let dy2 = 0
 let dx2 = 0
 let bullet: Sprite = null
+let ChasingDistance = 0
+let dy3 = 0
+let dx3 = 0
 let Attack: Sprite = null
-let bar: StatusBarSprite = null
+let damagedEnemy: Sprite = null
 let isFollowing = false
 let isDown = false
 let isUp = false
@@ -366,13 +380,10 @@ let activePlayer: Sprite = null
 let playerCat: Sprite = null
 let playerMiner: Sprite = null
 let hasTriggeredChase = false
-let enemyBarsList: StatusBarSprite[] = []
 let dy = 0
 let dx = 0
 let isBlocked = false
-let Enemys = null
-let tile = null
-enemyBarsList = statusbars.allOfKind(StatusBarKind.EnemyHealth)
+let enemyBarsList = statusbars.allOfKind(StatusBarKind.EnemyHealth)
 hasTriggeredChase = false
 playerMiner = sprites.create(assets.image`TEST`, SpriteKind.ActivePlayer)
 playerCat = sprites.create(assets.image`Sprite_Cat_Backward`, SpriteKind.Follower)
